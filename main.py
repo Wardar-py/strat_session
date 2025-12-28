@@ -12,6 +12,18 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Новогодняя Backend Odyssey 2025: Год прорывов")
 clock = pygame.time.Clock()
 emoji_surfaces = {}
+
+# Фоновая новогодняя музыка
+try:
+    # Фоновая новогодняя музыка
+    pygame.mixer.music.load("starship.mp3")
+    pygame.mixer.music.set_volume(0.5)    # громкость 50%
+    pygame.mixer.music.play(-1)           # -1 = бесконечный повтор
+    music_playing = True
+except:
+    print("Не удалось загрузить фоновую музыку (music.mp3)")
+    music_playing = False
+
 # Загрузка изображений
 try:
     background_image = pygame.image.load("fon.jpg")
