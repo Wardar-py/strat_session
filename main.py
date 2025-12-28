@@ -34,6 +34,19 @@ except:
     grinch_image = None
     print("Не удалось загрузить grinch.png")
 
+try:
+    alina_image = pygame.image.load("alina.png")
+except:
+    alina_image = None
+    print("❌ Не удалось загрузить alina.png")
+
+try:
+    alina_image = pygame.image.load("alina.png")
+    alina_image = pygame.transform.scale(alina_image, (45, 45))  # Размер лица персонажа
+except:
+    alina_image = None
+    print("Не удалось загрузить alina.png")
+
 # Загрузка шрифтов
 try:
     title_font = pygame.font.Font("fonts/arial.ttf", 42)
@@ -52,22 +65,22 @@ except:
 COLORS = {
     "background": (10, 20, 30),
     "dark_bg": (20, 30, 45),
-    "primary": (220, 20, 60),      # Красный новогодний
-    "secondary": (34, 139, 34),    # Зеленый елочный
-    "success": (255, 215, 0),      # Золотой
-    "warning": (255, 140, 0),      # Оранжевый мандариновый
-    "danger": (178, 34, 34),       # Темно-красный
-    "text": (255, 250, 250),       # Снежно-белый
+    "primary": (220, 20, 60),  # Красный новогодний
+    "secondary": (34, 139, 34),  # Зеленый елочный
+    "success": (255, 215, 0),  # Золотой
+    "warning": (255, 140, 0),  # Оранжевый мандариновый
+    "danger": (178, 34, 34),  # Темно-красный
+    "text": (255, 250, 250),  # Снежно-белый
     "text_secondary": (192, 192, 192),  # Серебристый
-    "dev1": (220, 20, 60),         # Красный Санта
-    "dev2": (34, 139, 34),         # Зеленый эльф
+    "dev1": (220, 20, 60),  # Красный Санта
+    "dev2": (34, 139, 34),  # Зеленый эльф
     "ui_bg": (25, 35, 50, 220),
-    "obstacle": (178, 34, 34),     # Темно-красный
-    "refactor": (255, 215, 0),     # Золотой
-    "automation": (135, 206, 250), # Голубой снежный
-    "feature": (50, 205, 50),      # Лайм-зеленый
-    "snow": (255, 255, 255),       # Белый снег
-    "star": (255, 215, 0)          # Золотая звезда
+    "obstacle": (178, 34, 34),  # Темно-красный
+    "refactor": (255, 215, 0),  # Золотой
+    "automation": (135, 206, 250),  # Голубой снежный
+    "feature": (50, 205, 50),  # Лайм-зеленый
+    "snow": (255, 255, 255),  # Белый снег
+    "star": (255, 215, 0)  # Золотая звезда
 }
 
 
@@ -114,7 +127,6 @@ class Particle:
 
     def is_dead(self):
         return self.life <= 0
-
 
 
 class Developer:
@@ -210,20 +222,20 @@ class Developer:
 
         # Рисуем разработчика с новогодним стилем
         pygame.draw.rect(surface, self.color, body_rect, 0, 10)
-        
+
         # Новогодние украшения на теле
         if self.name == "Артем":  # Санта
             # Белая отделка
-            pygame.draw.rect(surface, COLORS["snow"], 
-                           (self.x, self.y + self.height - 15, self.width, 15), 0, 5)
+            pygame.draw.rect(surface, COLORS["snow"],
+                             (self.x, self.y + self.height - 15, self.width, 15), 0, 5)
             # Пояс
-            pygame.draw.rect(surface, (139, 69, 19), 
-                           (self.x, self.y + self.height // 2, self.width, 8))
+            pygame.draw.rect(surface, (139, 69, 19),
+                             (self.x, self.y + self.height // 2, self.width, 8))
         else:  # Эльф
             # Полоски на костюме
             for i in range(0, self.height, 15):
-                pygame.draw.rect(surface, COLORS["warning"], 
-                               (self.x, self.y + i, self.width, 3))
+                pygame.draw.rect(surface, COLORS["warning"],
+                                 (self.x, self.y + i, self.width, 3))
 
         # Голова
         head_y = self.y - 20 + bounce_offset
@@ -241,8 +253,8 @@ class Developer:
             ]
             pygame.draw.polygon(surface, COLORS["primary"], hat_points)
             # Белый помпон
-            pygame.draw.circle(surface, COLORS["snow"], 
-                             (self.x + self.width // 2 + 5, head_y - 30), 5)
+            pygame.draw.circle(surface, COLORS["snow"],
+                               (self.x + self.width // 2 + 5, head_y - 30), 5)
         else:  # Шапка эльфа
             # Зеленая остроконечная шапка
             hat_points = [
@@ -252,12 +264,35 @@ class Developer:
             ]
             pygame.draw.polygon(surface, COLORS["secondary"], hat_points)
             # Колокольчик
-            pygame.draw.circle(surface, COLORS["warning"], 
-                             (self.x + self.width // 2, head_y - 35), 3)
+            pygame.draw.circle(surface, COLORS["warning"],
+                               (self.x + self.width // 2, head_y - 35), 3)
 
-        # Текстовая иконка роли
-        icon_surf = font_medium.render(self.icon_text, True, COLORS["text"])
-        surface.blit(icon_surf, (self.x + self.width // 2 - 8, head_y - 5))
+        # Лицо персонажа
+        if self.name == "Алина" and alina_image:  # Для эльфа используем фото Алины
+            # Создаем круглую маску для фото
+            face_size = 28
+            face_x = self.x + self.width // 2 - face_size // 2
+            face_y = head_y - face_size // 2
+
+            # Масштабируем изображение под размер лица с сглаживанием
+            scaled_alina = pygame.transform.smoothscale(alina_image, (face_size, face_size))
+
+            # Создаем круглую маску
+            face_surface = pygame.Surface((face_size, face_size), pygame.SRCALPHA)
+            face_surface.blit(scaled_alina, (0, 0))
+
+            # Применяем круглую маску
+            for x in range(face_size):
+                for y in range(face_size):
+                    distance = ((x - face_size // 2) ** 2 + (y - face_size // 2) ** 2) ** 0.5
+                    if distance > face_size // 2:
+                        face_surface.set_at((x, y), (0, 0, 0, 0))
+
+            surface.blit(face_surface, (face_x, face_y))
+        else:
+            # Текстовая иконка роли для Санты или если нет изображения Алины
+            icon_surf = font_medium.render(self.icon_text, True, COLORS["text"])
+            surface.blit(icon_surf, (self.x + self.width // 2 - 8, head_y - 5))
 
         # Ноги (анимация бега)
         leg_offset = self.run_frames[self.animation_frame] * 3
@@ -296,15 +331,15 @@ class AchievementObstacle:
         self.bounce_speed = random.uniform(0.05, 0.1)
 
         self.types = {
-            "team": COLORS["success"],      # Золотой
+            "team": COLORS["success"],  # Золотой
             "deadline": COLORS["warning"],  # Оранжевый
-            "product": COLORS["primary"],   # Красный
-            "refactor": COLORS["refactor"], # Золотой
-            "api": COLORS["obstacle"],      # Темно-красный
-            "config": COLORS["automation"], # Голубой
+            "product": COLORS["primary"],  # Красный
+            "refactor": COLORS["refactor"],  # Золотой
+            "api": COLORS["obstacle"],  # Темно-красный
+            "config": COLORS["automation"],  # Голубой
             "template": COLORS["feature"],  # Зеленый
-            "automation": COLORS["secondary"], # Зеленый
-            "reuse": COLORS["dev2"]         # Зеленый эльфа
+            "automation": COLORS["secondary"],  # Зеленый
+            "reuse": COLORS["dev2"]  # Зеленый эльфа
         }
 
         self.color = self.types.get(achievement_data.get("type", "product"), COLORS["primary"])
@@ -338,7 +373,7 @@ class AchievementObstacle:
             # Поворот изображения
             rotated_grinch = pygame.transform.rotate(grinch_image, self.rotation)
             rotated_rect = rotated_grinch.get_rect(center=(self.x + self.width // 2,
-                                                         current_y + self.height // 2))
+                                                           current_y + self.height // 2))
             surface.blit(rotated_grinch, rotated_rect)
         else:
             # Свечение (если нет изображения)
@@ -552,11 +587,11 @@ class Game:
     def create_celebration_particles(self):
         # Новогодние цвета для частиц
         christmas_colors = [
-            COLORS["success"],    # Золотой
-            COLORS["primary"],    # Красный
+            COLORS["success"],  # Золотой
+            COLORS["primary"],  # Красный
             COLORS["secondary"],  # Зеленый
-            COLORS["snow"],       # Белый
-            COLORS["warning"]     # Оранжевый
+            COLORS["snow"],  # Белый
+            COLORS["warning"]  # Оранжевый
         ]
         for _ in range(40):  # Больше частиц для праздника
             self.particles.append(Particle(
@@ -604,7 +639,7 @@ class Game:
                             obstacle.y + obstacle.height // 2,
                             COLORS["success"]
                         ))
-                
+
                 # Проверяем столкновения
                 collected_by = None
                 if obstacle.check_collision(self.dev1):
@@ -684,7 +719,7 @@ class Game:
         # Счет
         score_text = font_small.render(f"Общий счет: {self.score}", True, COLORS["text"])
         screen.blit(score_text, (40, 80))
-        
+
         # Очки за прыжки
         jump_score_text = font_small.render(f"За прыжки: {self.jump_score}", True, COLORS["success"])
         screen.blit(jump_score_text, (40, 105))
@@ -807,7 +842,7 @@ class Game:
         if "details" in self.achievement_display:
             details_title = font_small.render("Детали:", True, COLORS["warning"])
             screen.blit(details_title, (popup_x + 30, popup_y + 200))
-            
+
             for i, detail in enumerate(self.achievement_display["details"][:3]):  # Максимум 3 детали
                 detail_text = f"• {detail}"
                 detail_render = font_xsmall.render(detail_text, True, COLORS["text_secondary"])
@@ -834,7 +869,6 @@ class Game:
             collector_text = font_small.render(f"Собрано: {collected_by}", True, COLORS["text_secondary"])
             screen.blit(collector_text, (popup_x + popup_width // 2 - collector_text.get_width() // 2,
                                          popup_y + 300))
-            screen.blit(collector_text, (popup_x + popup_width - 200, popup_y + 155))
 
     def draw_menu(self):
         # Фон меню
@@ -902,11 +936,11 @@ class Game:
         # Заголовок
         congrats = title_font.render("* ВСЕ НОВОГОДНИЕ ДОСТИЖЕНИЯ СОБРАНЫ! *", True, COLORS["success"])
         screen.blit(congrats, (WIDTH // 2 - congrats.get_width() // 2, panel_y + 30))
-        
+
         # Финальный счет
         final_score = font_large.render(f"Финальный счет: {self.score}", True, COLORS["primary"])
         screen.blit(final_score, (WIDTH // 2 - final_score.get_width() // 2, panel_y + 80))
-        
+
         jump_score_final = font_medium.render(f"Очки за прыжки: {self.jump_score}", True, COLORS["success"])
         screen.blit(jump_score_final, (WIDTH // 2 - jump_score_final.get_width() // 2, panel_y + 110))
 
@@ -979,29 +1013,6 @@ class Game:
         # Кнопка рестарта
         restart_text = font_medium.render("Нажмите R для новой игры или ESC для выхода", True, COLORS["warning"])
         screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, panel_y + panel_height - 30))
-            f"Тимлид: {len(self.dev1.collected)} достижений",
-            f"Разработчик: {len(self.dev2.collected)} достижений",
-            f"Итоговый счет: {self.score}",
-            f"Время прохождения: {self.timer // 60} сек."
-        ]
-
-        for i, stat in enumerate(stats):
-            stat_text = font_medium.render(stat, True, COLORS["text"])
-            screen.blit(stat_text, (col2_x, stats_y + i * 30))
-
-        # Кнопка рестарта
-        button_rect = pygame.Rect(WIDTH // 2 - 150, panel_y + panel_height - 50, 300, 45)
-        pygame.draw.rect(screen, COLORS["primary"], button_rect, 0, 10)
-        restart_text = font_medium.render("ИГРАТЬ ЕЩЕ РАЗ", True, COLORS["text"])
-        screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2,
-                                   panel_y + panel_height - 40))
-
-        # Подсказка
-        hint = font_small.render("Нажмите R для рестарта или ESC для выхода в меню",
-                                 True, COLORS["text_secondary"])
-        screen.blit(hint, (WIDTH // 2 - hint.get_width() // 2, panel_y + panel_height + 20))
-
-        return button_rect
 
     def draw(self):
         if self.state == GameState.MENU:
