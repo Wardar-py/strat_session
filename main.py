@@ -11,11 +11,18 @@ WIDTH, HEIGHT = 1400, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Новогодняя Backend Odyssey 2025: Год прорывов")
 clock = pygame.time.Clock()
-
+emoji_surfaces = {}
 # Загрузка изображений
 try:
     background_image = pygame.image.load("fon.jpg")
     # Оставляем оригинальный размер, масштабирование будет при отрисовке
+    bg_width, bg_height = background_image.get_size()
+    scale_x = WIDTH / bg_width
+    scale_y = HEIGHT / bg_height
+    scale = min(scale_x, scale_y)  # Используем меньший масштаб для сохранения пропорций
+    new_width = int(bg_width * scale)
+    new_height = int(bg_height * scale)
+    background_image = pygame.transform.scale(background_image, (new_width, new_height))
 except:
     background_image = None
     print("Не удалось загрузить fon.jpg")
@@ -44,6 +51,13 @@ try:
     snowflake_image = pygame.transform.scale(snowflake_image, (20, 20))
 except:
     snowflake_image = None
+    print("Не удалось загрузить snow.png")
+
+try:
+    artem_image = pygame.image.load("artem.png").convert_alpha()
+    artem_image = pygame.transform.scale(artem_image, (45, 45))
+except:
+    artem_image = None
     print("Не удалось загрузить snow.png")
 # Загрузка шрифтов
 try:
@@ -314,31 +328,12 @@ class Developer:
             pygame.draw.circle(surface, COLORS["warning"],
                                (self.x + self.width // 2, head_y - 50), 4)
             # Лицо персонажа
+
         if self.name == "Алина" and alina_image:  # Для эльфа используем фото Алины
-            # Создаем круглую маску для фото
-            face_size = 45  # было 28
-            # Масштабируем изображение под размер лица с сглаживанием
-            scaled_alina = pygame.transform.smoothscale(alina_image, (face_size, face_size))
-            # Позиция лица
-            face_x = self.x + self.width // 2 - face_size // 2
-            face_y = head_y - face_size // 2
-
-            # Создаем круглую маску
-            face_surface = pygame.Surface((face_size, face_size), pygame.SRCALPHA)
-            face_surface.blit(scaled_alina, (0, 0))
-
-            # Применяем круглую маску
-            for x in range(face_size):
-                for y in range(face_size):
-                    distance = ((x - face_size // 2) ** 2 + (y - face_size // 2) ** 2) ** 0.5
-                    if distance > face_size // 2:
-                        face_surface.set_at((x, y), (0, 0, 0, 0))
-
-            surface.blit(face_surface, (face_x, face_y))
+            self.face(alina_image, head_y, surface)
         else:
             # Текстовая иконка роли для Санты или если нет изображения Алины
-            icon_surf = font_medium.render(self.icon_text, True, COLORS["text"])
-            surface.blit(icon_surf, (self.x + self.width // 2 - 8, head_y - 5))
+            self.face(artem_image, head_y, surface)
 
         # Ноги (анимация бега)
         leg_offset = self.run_frames[self.animation_frame] * 3
@@ -357,6 +352,29 @@ class Developer:
         # Частицы
         for particle in self.particles:
             particle.draw(surface)
+
+    def face(self, image, head_y, surface):
+        # Создаем круглую маску для фото
+        face_size = 45  # было 28
+        # Масштабируем изображение под размер лица с сглаживанием
+        scaled_alina = pygame.transform.smoothscale(image, (face_size, face_size))
+        # Позиция лица
+        face_x = self.x + self.width // 2 - face_size // 2
+        face_y = head_y - face_size // 2
+
+        # Создаем круглую маску
+        face_surface = pygame.Surface((face_size, face_size), pygame.SRCALPHA)
+        face_surface.blit(scaled_alina, (0, 0))
+
+        # Применяем круглую маску
+        for x in range(face_size):
+            for y in range(face_size):
+                distance = ((x - face_size // 2) ** 2 + (y - face_size // 2) ** 2) ** 0.5
+                if distance > face_size // 2:
+                    face_surface.set_at((x, y), (0, 0, 0, 0))
+
+        surface.blit(face_surface, (face_x, face_y))
+
 
 
 # Препятствие-достижение
@@ -800,9 +818,6 @@ class Game:
                 s = pygame.Surface((size * 2, size * 2), pygame.SRCALPHA)
                 pygame.draw.circle(s, (*COLORS["snow"], alpha), (size, size), size)
                 screen.blit(s, (x - size, y - size))
-        # Боковые панели (полупрозрачные поверх фона)
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (0, 0, 280, HEIGHT))
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (WIDTH - 320, 0, 320, HEIGHT))
 
     def draw_text_with_shadow(self, surface, text, font, color, x, y, shadow_color=(0, 0, 0)):
         """Отрисовка текста с тенью для лучшей читаемости"""
@@ -817,24 +832,26 @@ class Game:
     def draw_ui(self):
         # Левый сайдбар - статистика (полупрозрачный фон)
         pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 120), (20, 20, 240, 200), 0, 10)
-
         # Заголовок
-        title = font_medium.render("Новогодняя Backend Odyssey 2025", True, COLORS["primary"])
+        title = font_medium.render("""Новогодняя Backend""", True, COLORS["primary"])
         screen.blit(title, (40, 40))
+
+        title = font_medium.render("""Odyssey 2025""", True, COLORS["primary"])
+        screen.blit(title, (40, 60))
 
         # Счет
         score_text = font_small.render(f"Общий счет: {self.score}", True, COLORS["text"])
-        screen.blit(score_text, (40, 80))
+        screen.blit(score_text, (40, 90))
 
         # Очки за прыжки
         jump_score_text = font_small.render(f"За прыжки: {self.jump_score}", True, COLORS["success"])
-        screen.blit(jump_score_text, (40, 105))
+        screen.blit(jump_score_text, (40, 115))
 
         # Прогресс
         collected = len(self.dev1.collected) + len(self.dev2.collected)
         total = len(achievements_data)
         progress_text = font_small.render(f"Прогресс: {collected}/{total}", True, COLORS["text"])
-        screen.blit(progress_text, (40, 130))
+        screen.blit(progress_text, (40, 140))
 
         # Прогресс-бар
         progress_width = 200
@@ -844,13 +861,6 @@ class Game:
         self.display_progress += (target_progress - self.display_progress) * 0.1  # интерполяция
         pygame.draw.rect(screen, COLORS["success"],
                          (40, 160, progress_width * self.display_progress, 12), 0, 6)
-        # Статистика разработчиков
-        dev1_text = font_xsmall.render(f"SANTA Санта: {len(self.dev1.collected)}",
-                                       True, self.dev1.color)
-        dev2_text = font_xsmall.render(f"ELF Эльф: {len(self.dev2.collected)}",
-                                       True, self.dev2.color)
-        screen.blit(dev1_text, (40, 190))
-        screen.blit(dev2_text, (40, 215))
 
         # Правый сайдбар - управление
         controls_y = HEIGHT - 250
@@ -1010,7 +1020,6 @@ class Game:
         description = [
             "Санта Артем и Эльф Алина бегут к новогоднему успеху!",
             "Перепрыгивайте препятствия (+50 очков) или касайтесь их (+150 очков).",
-            "В любом случае вы получите достижение и покажется его описание.",
             "После показа достижения нажмите ENTER для продолжения."
         ]
 
@@ -1055,17 +1064,13 @@ class Game:
         congrats = title_font.render("🎉 ВСЕ НОВОГОДНИЕ ДОСТИЖЕНИЯ 2025! 🎉", True, COLORS["success"])
         screen.blit(congrats, (WIDTH // 2 - congrats.get_width() // 2, panel_y + 20))
 
-        # Финальный счет
-        final_score = font_large.render(f"Финальный счет: {self.score}", True, COLORS["primary"])
-        screen.blit(final_score, (WIDTH // 2 - final_score.get_width() // 2, panel_y + 60))
-
         # Разделитель
         pygame.draw.line(screen, COLORS["primary"],
                          (panel_x + 50, panel_y + 100),
                          (panel_x + panel_width - 50, panel_y + 100), 2)
 
         # Отображение всех достижений в две колонки
-        col1_x = panel_x + 30
+        col1_x = panel_x + 60
         col2_x = panel_x + panel_width // 2 + 20
         start_y = panel_y + 120
 
@@ -1108,34 +1113,14 @@ class Game:
             if len(title_text) > 35:
                 title_text = title_text[:32] + "..."
             title_render = font_small.render(title_text, True, COLORS["text"])
-            screen.blit(title_render, (x + 40, y))
+            screen.blit(title_render, (x + 80, y))
 
             # Статистика достижения
             stats_render = font_xsmall.render(achievement["stats"], True, COLORS["success"])
             screen.blit(stats_render, (x + 40, y + 20))
 
-            # Индикатор сбора (кто собрал это достижение)
-            collected_by = []
-            if any(ach["title"] == achievement["title"] for ach in self.dev1.collected):
-                collected_by.append("Санта")
-            if any(ach["title"] == achievement["title"] for ach in self.dev2.collected):
-                collected_by.append("Эльф")
-
-            if collected_by:
-                collector_text = f"✓ {', '.join(collected_by)}"
-                collector_color = COLORS["secondary"]
-            else:
-                collector_text = "✗ Не собрано"
-                collector_color = COLORS["danger"]
-
-            collector_render = font_xsmall.render(collector_text, True, collector_color)
-            screen.blit(collector_render, (x + 40, y + 35))
-
-        # Итоговая статистика внизу
-        total_collected = len(self.dev1.collected) + len(self.dev2.collected)
         stats_y = panel_y + panel_height - 80
-
-        summary_text = f"Собрано: {total_collected}/{len(achievements_data)} достижений | Время: {self.timer // 60} сек | Эффективность: {int((total_collected / len(achievements_data)) * 100)}%"
+        summary_text = f"Собрано: 9 достижений | Время: 363 дня | Эффективность: 100%"
         summary_render = font_medium.render(summary_text, True, COLORS["text"])
         screen.blit(summary_render, (WIDTH // 2 - summary_render.get_width() // 2, stats_y))
 
