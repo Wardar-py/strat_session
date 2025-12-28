@@ -15,14 +15,7 @@ clock = pygame.time.Clock()
 # Загрузка изображений
 try:
     background_image = pygame.image.load("fon.jpg")
-    # Масштабируем изображение, сохраняя пропорции
-    bg_width, bg_height = background_image.get_size()
-    scale_x = WIDTH / bg_width
-    scale_y = HEIGHT / bg_height
-    scale = min(scale_x, scale_y)  # Используем меньший масштаб для сохранения пропорций
-    new_width = int(bg_width * scale)
-    new_height = int(bg_height * scale)
-    background_image = pygame.transform.scale(background_image, (new_width, new_height))
+    # Оставляем оригинальный размер, масштабирование будет при отрисовке
 except:
     background_image = None
     print("Не удалось загрузить fon.jpg")
@@ -683,10 +676,9 @@ class Game:
     def draw_background(self):
         # Используем фоновое изображение если доступно
         if background_image:
-            # Центрируем изображение
-            bg_x = (WIDTH - background_image.get_width()) // 2
-            bg_y = (HEIGHT - background_image.get_height()) // 2
-            screen.blit(background_image, (bg_x, bg_y))
+            # Масштабируем изображение на весь экран
+            scaled_bg = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+            screen.blit(scaled_bg, (0, 0))
         else:
             # Новогодний градиентный фон (запасной вариант)
             for y in range(HEIGHT):
@@ -704,13 +696,19 @@ class Game:
                                (snow_size, snow_size), snow_size)
             screen.blit(s, (x - snow_size, y - snow_size))
 
-        # Боковые панели (полупрозрачные поверх фона)
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (0, 0, 280, HEIGHT))
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (WIDTH - 320, 0, 320, HEIGHT))
+    def draw_text_with_shadow(self, surface, text, font, color, x, y, shadow_color=(0, 0, 0)):
+        """Отрисовка текста с тенью для лучшей читаемости"""
+        # Рисуем тень
+        shadow_surf = font.render(text, True, shadow_color)
+        surface.blit(shadow_surf, (x + 1, y + 1))
+        # Рисуем основной текст
+        text_surf = font.render(text, True, color)
+        surface.blit(text_surf, (x, y))
+        return text_surf
 
     def draw_ui(self):
-        # Левый сайдбар - статистика
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (20, 20, 240, 200), 0, 10)
+        # Левый сайдбар - статистика (полупрозрачный фон)
+        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 120), (20, 20, 240, 200), 0, 10)
 
         # Заголовок
         title = font_medium.render("Новогодняя Backend Odyssey 2025", True, COLORS["primary"])
@@ -763,8 +761,8 @@ class Game:
             control_text = font_xsmall.render(text, True, COLORS["text_secondary"])
             screen.blit(control_text, (WIDTH - 300, controls_y + i * 25))
 
-        # Последние достижения
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (WIDTH - 300, 20, 280, 150), 0, 10)
+        # Последние достижения (полупрозрачный фон)
+        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 120), (WIDTH - 300, 20, 280, 150), 0, 10)
         achievements_title = font_small.render("Последние:", True, COLORS["primary"])
         screen.blit(achievements_title, (WIDTH - 280, 40))
 
@@ -826,7 +824,7 @@ class Game:
         title = font_large.render(title_text, True, COLORS["success"])
 
         screen.blit(icon, (popup_x + 30, popup_y + 25))
-        screen.blit(title, (popup_x + 80, popup_y + 25))
+        screen.blit(title, (popup_x + 110, popup_y + 25))
 
         # Основной текст с переносами
         text_lines = self.wrap_text(self.achievement_display["text"], font_small, 1000)
@@ -894,7 +892,7 @@ class Game:
 
         # Описание
         description = [
-            "Санта и Эльф бегут к новогоднему успеху, собирая достижения года.",
+            "Санта Артем и Эльф Алина бегут к новогоднему успеху, собирая достижения года.",
             "Управляйте прыжками (ПРОБЕЛ) и собирайте все новогодние препятствия.",
             "Получайте очки за успешные прыжки (+50) и сбор достижений (+100).",
             "После сбора достижения нажмите ENTER для продолжения."
