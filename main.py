@@ -28,7 +28,7 @@ except:
     print("Не удалось загрузить fon.jpg")
 
 try:
-    grinch_image = pygame.image.load("grinch.png")
+    grinch_image = pygame.image.load("grinch2.png").convert_alpha()
     grinch_image = pygame.transform.scale(grinch_image, (80, 80))
 except:
     grinch_image = None
@@ -46,20 +46,25 @@ try:
 except:
     alina_image = None
     print("Не удалось загрузить alina.png")
-
+try:
+    snowflake_image = pygame.image.load("snow.png").convert_alpha()
+    snowflake_image = pygame.transform.scale(snowflake_image, (20, 20))
+except:
+    snowflake_image = None
+    print("Не удалось загрузить snow.png")
 # Загрузка шрифтов
 try:
     title_font = pygame.font.Font("fonts/arial.ttf", 42)
-    font_large = pygame.font.Font("fonts/arial.ttf", 28)
-    font_medium = pygame.font.Font("fonts/arial.ttf", 22)
-    font_small = pygame.font.Font("fonts/arial.ttf", 18)
-    font_xsmall = pygame.font.Font("fonts/arial.ttf", 16)
+    font_large = pygame.font.Font("fonts/arial.ttf", 36)
+    font_medium = pygame.font.Font("fonts/arial.ttf", 28)
+    font_small = pygame.font.Font("fonts/arial.ttf", 24)
+    font_xsmall = pygame.font.Font("fonts/arial.ttf", 20)
 except:
     title_font = pygame.font.Font(None, 42)
-    font_large = pygame.font.Font(None, 28)
-    font_medium = pygame.font.Font(None, 22)
-    font_small = pygame.font.Font(None, 18)
-    font_xsmall = pygame.font.Font(None, 16)
+    font_large = pygame.font.Font(None, 36)
+    font_medium = pygame.font.Font(None, 28)
+    font_small = pygame.font.Font(None, 24)
+    font_xsmall = pygame.font.Font(None, 20)
 
 # Новогодняя цветовая палитра
 COLORS = {
@@ -241,41 +246,62 @@ class Developer:
         head_y = self.y - 20 + bounce_offset
         pygame.draw.circle(surface, (255, 220, 177),  # Цвет кожи
                            (self.x + self.width // 2, head_y), 18)
+        # --- Руки ---
+        # Координаты плеч
+        shoulder_y = self.y + 15
+        left_shoulder_x = self.x + 5
+        right_shoulder_x = self.x + self.width - 5
 
+        # Длина рук
+        arm_length = 25
+
+        # Анимация движения рук при беге
+        swing = math.sin(pygame.time.get_ticks() * 0.01) * 10  # колебание +-10
+
+        # Левая рука
+        pygame.draw.line(surface, self.color,
+                         (left_shoulder_x, shoulder_y),
+                         (left_shoulder_x - arm_length, shoulder_y + swing), 5)
+        # Правая рука
+        pygame.draw.line(surface, self.color,
+                         (right_shoulder_x, shoulder_y),
+                         (right_shoulder_x + arm_length, shoulder_y - swing), 5)
         # Новогодняя шапка
         if self.name == "Артем":  # Шапка Санты
-            # Красная шапка
+            # Красная треугольная шапка
+            hat_offset = math.sin(pygame.time.get_ticks() * 0.005) * 3  # покачивание
             hat_points = [
-                (self.x + self.width // 2 - 15, head_y - 10),
-                (self.x + self.width // 2 + 15, head_y - 10),
-                (self.x + self.width // 2 + 20, head_y - 25),
-                (self.x + self.width // 2 + 5, head_y - 30)
+                (self.x + self.width // 2 - 20, head_y - 10 + hat_offset),  # левый край
+                (self.x + self.width // 2 + 20, head_y - 10 + hat_offset),  # правый край
+                (self.x + self.width // 2, head_y - 50 + hat_offset)  # вершина
             ]
             pygame.draw.polygon(surface, COLORS["primary"], hat_points)
             # Белый помпон
             pygame.draw.circle(surface, COLORS["snow"],
-                               (self.x + self.width // 2 + 5, head_y - 30), 5)
+                               (self.x + self.width // 2, head_y - 50), 6)
         else:  # Шапка эльфа
             # Зеленая остроконечная шапка
+            hat_offset = math.sin(pygame.time.get_ticks() * 0.005) * 3
             hat_points = [
-                (self.x + self.width // 2 - 12, head_y - 8),
-                (self.x + self.width // 2 + 12, head_y - 8),
-                (self.x + self.width // 2, head_y - 35)
+                (self.x + self.width // 2 - 18, head_y - 8 + hat_offset),  # ширина увеличена
+                (self.x + self.width // 2 + 18, head_y - 8 + hat_offset),
+                (self.x + self.width // 2, head_y - 50 + hat_offset)  # высота увеличена
             ]
             pygame.draw.polygon(surface, COLORS["secondary"], hat_points)
             # Колокольчик
             pygame.draw.circle(surface, COLORS["warning"],
-                               (self.x + self.width // 2, head_y - 35), 3)
-
-        # Лицо персонажа
+                               (self.x + self.width // 2, head_y - 50), 4)
+            # Лицо персонажа
         if self.name == "Алина" and alina_image:  # Для эльфа используем фото Алины
             # Создаем круглую маску для фото
-            face_size = 28
+            face_size = 45  # было 28
+            scaled_alina = pygame.transform.smoothscale(alina_image, (face_size, face_size))
+
+            # Позиция лица
             face_x = self.x + self.width // 2 - face_size // 2
             face_y = head_y - face_size // 2
 
             # Масштабируем изображение под размер лица с сглаживанием
-            scaled_alina = pygame.transform.smoothscale(alina_image, (face_size, face_size))
 
             # Создаем круглую маску
             face_surface = pygame.Surface((face_size, face_size), pygame.SRCALPHA)
@@ -316,8 +342,8 @@ class Developer:
 # Препятствие-достижение
 class AchievementObstacle:
     def __init__(self, achievement_data, x_offset=0):
+        self.y = HEIGHT // 2 - 40
         self.x = WIDTH + 150 + x_offset
-        self.y = HEIGHT - 140
         self.width = 80
         self.height = 80
         # ЗАМЕДЛЕННАЯ СКОРОСТЬ
@@ -370,7 +396,6 @@ class AchievementObstacle:
 
         # Если есть изображение Гринча, используем его
         if grinch_image:
-            # Поворот изображения
             rotated_grinch = pygame.transform.rotate(grinch_image, self.rotation)
             rotated_rect = rotated_grinch.get_rect(center=(self.x + self.width // 2,
                                                            current_y + self.height // 2))
@@ -432,7 +457,7 @@ class AchievementObstacle:
 # Новогодние данные достижений
 achievements_data = [
     {
-        "icon": "TEAM",
+        "icon": "TEAM  ",
         "title": "Новогодняя команда",
         "text": "В команду пришла ценная помощница Алина, которая выжила в суровых сроках и успешно справлялась с ответственными задачами",
         "stats": "+40% к скорости разработки",
@@ -541,13 +566,16 @@ achievements_data = [
     }
 ]
 
-
 # Основной класс игры
 class Game:
     def __init__(self):
         self.state = GameState.MENU
-        self.dev1 = Developer(150, HEIGHT - 170, COLORS["dev1"], "Артем", "SANTA")
-        self.dev2 = Developer(300, HEIGHT - 170, COLORS["dev2"], "Алина", "ELF")
+        center_x = WIDTH // 2
+        center_y = HEIGHT // 2
+
+        # Девелоперы в центре
+        self.dev1 = Developer(center_x - 80, center_y, COLORS["dev1"], "Артем", "SANTA")
+        self.dev2 = Developer(center_x + 80, center_y, COLORS["dev2"], "Алина", "ELF")
         self.selected_dev = self.dev1
         self.obstacles = []
         self.current_achievement = 0
@@ -563,16 +591,18 @@ class Game:
 
         # Фоновые элементы (обновляем для нового размера экрана)
         self.stars = []
-        for _ in range(80):  # Больше снежинок для большего экрана
+        for _ in range(120):  # Количество снежинок
             self.stars.append([
                 random.randint(0, WIDTH),
                 random.randint(0, HEIGHT),
-                random.uniform(0.1, 0.5)
+                random.uniform(0.3, 1.0),  # Яркость / масштаб снежинки
+                random.randint(15, 35)  # Размер снежинки (больше!)
             ])
 
     def spawn_obstacle(self):
         if self.current_achievement < len(achievements_data) and self.spawn_timer <= 0:
-            obstacle = AchievementObstacle(achievements_data[self.current_achievement])
+            obstacle = AchievementObstacle(achievements_data[self.current_achievement],
+                                           x_offset=self.current_achievement * 100)
             self.obstacles.append(obstacle)
             self.current_achievement += 1
             # УВЕЛИЧЕННЫЙ ТАЙМЕР ДЛЯ ЗАМЕДЛЕНИЯ
@@ -600,6 +630,7 @@ class Game:
                 random.choice(christmas_colors)
             ))
 
+
     def update(self):
         if self.state not in [GameState.PLAYING, GameState.ACHIEVEMENT_SHOW]:
             return
@@ -612,12 +643,13 @@ class Game:
             self.dev1.update()
             self.dev2.update()
 
-        # Обновление звезд
+        # Обновление снежинок
         for star in self.stars:
-            star[0] -= star[2] * 0.5
-            if star[0] < -10:
-                star[0] = WIDTH + 10
-                star[1] = random.randint(0, HEIGHT)
+            star[1] += star[2] * 3
+            star[0] += math.sin(pygame.time.get_ticks() * 0.001 + star[0]) * 0.5
+            if star[1] > HEIGHT:
+                star[1] = -star[3]
+                star[0] = random.randint(0, WIDTH)
 
         # Спавн препятствий
         self.spawn_obstacle()
@@ -695,21 +727,28 @@ class Game:
                 pygame.draw.line(screen, (color_value, color_value + 5, color_value + 30),
                                  (0, y), (WIDTH, y))
 
-        # Падающие снежинки
-        for x, y, brightness in self.stars:
-            alpha = int(200 * brightness)
-            snow_size = brightness * 3
-            s = pygame.Surface((snow_size * 2, snow_size * 2), pygame.SRCALPHA)
-            pygame.draw.circle(s, (*COLORS["snow"], alpha),
-                               (snow_size, snow_size), snow_size)
-            screen.blit(s, (x - snow_size, y - snow_size))
 
+        # Падающие снежинки с PNG
+        for x, y, brightness, size in self.stars:
+            if snowflake_image:
+                # Масштабируем PNG под размер снежинки
+                scaled_snowflake = pygame.transform.scale(snowflake_image, (size, size))
+                screen.blit(scaled_snowflake, (x - size // 2, y - size // 2))
+            else:
+                # fallback: белый кружок
+                alpha = int(200 * brightness)
+                s = pygame.Surface((size * 2, size * 2), pygame.SRCALPHA)
+                pygame.draw.circle(s, (*COLORS["snow"], alpha), (size, size), size)
+                screen.blit(s, (x - size, y - size))
         # Боковые панели (полупрозрачные поверх фона)
         pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (0, 0, 280, HEIGHT))
         pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (WIDTH - 320, 0, 320, HEIGHT))
 
+
     def draw_ui(self):
+
         # Левый сайдбар - статистика
+
         pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 180), (20, 20, 240, 200), 0, 10)
 
         # Заголовок
@@ -732,11 +771,12 @@ class Game:
 
         # Прогресс-бар
         progress_width = 200
-        progress = collected / total if total > 0 else 0
-        pygame.draw.rect(screen, (50, 50, 70), (40, 160, progress_width, 12), 0, 6)
+        # Плавное заполнение прогресс-бара
+        target_progress = collected / total if total > 0 else 0
+        self.display_progress = getattr(self, "display_progress", 0)
+        self.display_progress += (target_progress - self.display_progress) * 0.1  # интерполяция
         pygame.draw.rect(screen, COLORS["success"],
-                         (40, 160, progress_width * progress, 12), 0, 6)
-
+                         (40, 160, progress_width * self.display_progress, 12), 0, 6)
         # Статистика разработчиков
         dev1_text = font_xsmall.render(f"SANTA Санта: {len(self.dev1.collected)}",
                                        True, self.dev1.color)
@@ -775,6 +815,7 @@ class Game:
                                                       True, COLORS["text"])
                 screen.blit(achievement_text, (WIDTH - 280, 70 + i * 30))
 
+
     def wrap_text(self, text, font, max_width):
         """Перенос текста на несколько строк"""
         words = text.split(' ')
@@ -803,11 +844,10 @@ class Game:
         if not self.achievement_display:
             return
 
-        # Увеличенное окно для отображения всех данных
         popup_width = 1200
-        popup_height = 350  # Увеличена высота для деталей
+        popup_height = 350
         popup_x = WIDTH // 2 - popup_width // 2
-        popup_y = 50  # Немного ниже
+        popup_y = 50
 
         # Полупрозрачный фон
         s = pygame.Surface((popup_width, popup_height), pygame.SRCALPHA)
@@ -818,44 +858,48 @@ class Game:
         pygame.draw.rect(screen, COLORS["primary"],
                          (popup_x, popup_y, popup_width, popup_height), 3, 10)
 
-        # Иконка и заголовок
+        # Иконка
         icon = font_large.render(self.achievement_display["icon"], True, COLORS["primary"])
+        icon_x = popup_x + 30
+        icon_y = popup_y + 25
+        screen.blit(icon, (icon_x, icon_y))
+
+        # Отступ для текста
+        icon_width = 50
+        icon_margin = 30
+        content_x = icon_x + icon_width + icon_margin
+
+        # Заголовок
         title_text = self.achievement_display["title"]
         if len(title_text) > 50:
             title_text = title_text[:47] + "..."
         title = font_large.render(title_text, True, COLORS["success"])
+        screen.blit(title, (content_x, icon_y))
 
-        screen.blit(icon, (popup_x + 30, popup_y + 25))
-        screen.blit(title, (popup_x + 80, popup_y + 25))
-
-        # Основной текст с переносами
+        # Основной текст
         text_lines = self.wrap_text(self.achievement_display["text"], font_small, 1000)
-        for i, line in enumerate(text_lines[:4]):  # Максимум 4 строки
+        for i, line in enumerate(text_lines[:4]):
             text = font_small.render(line, True, COLORS["text"])
-            screen.blit(text, (popup_x + 30, popup_y + 70 + i * 22))
+            screen.blit(text, (content_x, popup_y + 70 + i * 22))
 
         # Статистика
         stats = font_small.render(self.achievement_display["stats"], True, COLORS["secondary"])
-        screen.blit(stats, (popup_x + 30, popup_y + 170))
+        screen.blit(stats, (content_x, popup_y + 170))
 
-        # Детали достижения
+        # Детали
         if "details" in self.achievement_display:
             details_title = font_small.render("Детали:", True, COLORS["warning"])
-            screen.blit(details_title, (popup_x + 30, popup_y + 200))
-
-            for i, detail in enumerate(self.achievement_display["details"][:3]):  # Максимум 3 детали
+            screen.blit(details_title, (content_x, popup_y + 200))
+            for i, detail in enumerate(self.achievement_display["details"][:3]):
                 detail_text = f"• {detail}"
-                detail_render = font_xsmall.render(detail_text, True, COLORS["text_secondary"])
-                screen.blit(detail_render, (popup_x + 50, popup_y + 225 + i * 20))
+                detail_render = font_small.render(detail_text, True, COLORS["text_secondary"])
+                screen.blit(detail_render, (content_x + 20, popup_y + 225 + i * 20))
 
-        # Клавиша для продолжения
+        # Продолжение / индикатор
         if self.state == GameState.ACHIEVEMENT_WAIT:
             continue_text = font_medium.render("Нажмите ENTER для продолжения", True, COLORS["warning"])
-            screen.blit(continue_text, (popup_x + popup_width // 2 - continue_text.get_width() // 2,
-                                        popup_y + 300))
+            screen.blit(continue_text, (popup_x + popup_width // 2 - continue_text.get_width() // 2, popup_y + 300))
         else:
-            # Индикатор сбора
-            # Проверяем, у кого из разработчиков есть это достижение
             dev1_has = any(ach["title"] == self.achievement_display["title"] for ach in self.dev1.collected)
             dev2_has = any(ach["title"] == self.achievement_display["title"] for ach in self.dev2.collected)
 
@@ -867,8 +911,7 @@ class Game:
                 collected_by = "Разработчик"
 
             collector_text = font_small.render(f"Собрано: {collected_by}", True, COLORS["text_secondary"])
-            screen.blit(collector_text, (popup_x + popup_width // 2 - collector_text.get_width() // 2,
-                                         popup_y + 300))
+            screen.blit(collector_text, (popup_x + popup_width // 2 - collector_text.get_width() // 2, popup_y + 300))
 
     def draw_menu(self):
         # Фон меню
@@ -919,101 +962,131 @@ class Game:
         return button_rect
 
     def draw_finish_screen(self):
-        # Фон
         self.draw_background()
 
-        # Центральная панель (увеличена для большего количества информации)
+        # ---------- Панель ----------
         panel_width = 1200
-        panel_height = 600
+        panel_height = 650
         panel_x = WIDTH // 2 - panel_width // 2
-        panel_y = 50
+        panel_y = 40
 
-        pygame.draw.rect(screen, (*COLORS["ui_bg"][:3], 240),
-                         (panel_x, panel_y, panel_width, panel_height), 0, 20)
-        pygame.draw.rect(screen, COLORS["primary"],
-                         (panel_x, panel_y, panel_width, panel_height), 3, 20)
+        pygame.draw.rect(
+            screen, (*COLORS["ui_bg"][:3], 240),
+            (panel_x, panel_y, panel_width, panel_height), 0, 20
+        )
+        pygame.draw.rect(
+            screen, COLORS["primary"],
+            (panel_x, panel_y, panel_width, panel_height), 3, 20
+        )
 
-        # Заголовок
-        congrats = title_font.render("* ВСЕ НОВОГОДНИЕ ДОСТИЖЕНИЯ СОБРАНЫ! *", True, COLORS["success"])
-        screen.blit(congrats, (WIDTH // 2 - congrats.get_width() // 2, panel_y + 30))
+        # ---------- Заголовок ----------
+        y = panel_y + 30
+        congrats = title_font.render(
+            "🎉 ВСЕ НОВОГОДНИЕ ДОСТИЖЕНИЯ СОБРАНЫ! 🎉",
+            True, COLORS["success"]
+        )
+        screen.blit(congrats, (WIDTH // 2 - congrats.get_width() // 2, y))
 
-        # Финальный счет
+        y += 50
         final_score = font_large.render(f"Финальный счет: {self.score}", True, COLORS["primary"])
-        screen.blit(final_score, (WIDTH // 2 - final_score.get_width() // 2, panel_y + 80))
+        screen.blit(final_score, (WIDTH // 2 - final_score.get_width() // 2, y))
 
-        jump_score_final = font_medium.render(f"Очки за прыжки: {self.jump_score}", True, COLORS["success"])
-        screen.blit(jump_score_final, (WIDTH // 2 - jump_score_final.get_width() // 2, panel_y + 110))
+        y += 35
+        jump_score = font_medium.render(f"Очки за прыжки: {self.jump_score}", True, COLORS["success"])
+        screen.blit(jump_score, (WIDTH // 2 - jump_score.get_width() // 2, y))
 
-        # Разделитель
-        pygame.draw.line(screen, COLORS["primary"],
-                         (panel_x + 50, panel_y + 140),
-                         (panel_x + panel_width - 50, panel_y + 140), 2)
+        # ---------- Разделитель ----------
+        y += 40
+        pygame.draw.line(
+            screen, COLORS["primary"],
+            (panel_x + 40, y),
+            (panel_x + panel_width - 40, y), 2
+        )
 
-        # Колонки с достижениями
+        # ---------- Константы верстки ----------
+        COL_TOP = y + 30
+        LINE_TITLE = 32
+        LINE_TEXT = 28
+        ACH_BLOCK = 64
+
         col1_x = panel_x + 50
         col2_x = panel_x + panel_width // 2 + 20
-        y_offset = panel_y + 170
 
-        # Санта
-        dev1_title = font_large.render("SANTA Санта собрал:", True, COLORS["dev1"])
-        screen.blit(dev1_title, (col1_x, y_offset))
+        # ---------- Санта ----------
+        screen.blit(
+            font_large.render("🎅 SANTA собрал:", True, COLORS["dev1"]),
+            (col1_x, COL_TOP)
+        )
 
-        for i, achievement in enumerate(self.dev1.collected[:6]):  # Ограничиваем количество для экрана
-            ach_text = font_small.render(f"* {achievement['title']}", True, COLORS["text"])
-            screen.blit(ach_text, (col1_x + 20, y_offset + 40 + i * 22))
-            # Показываем статистику достижения
-            stats_text = font_xsmall.render(f"  {achievement['stats']}", True, COLORS["text_secondary"])
-            screen.blit(stats_text, (col1_x + 40, y_offset + 55 + i * 22))
+        for i, ach in enumerate(self.dev1.collected[:6]):
+            base_y = COL_TOP + LINE_TITLE + i * ACH_BLOCK
 
-        # Эльф
-        dev2_title = font_large.render("ELF Эльф собрал:", True, COLORS["dev2"])
-        screen.blit(dev2_title, (col2_x, y_offset))
+            title = font_small.render(f"• {ach['title']}", True, COLORS["text"])
+            stats = font_xsmall.render(ach["stats"], True, COLORS["text_secondary"])
 
-        for i, achievement in enumerate(self.dev2.collected[:6]):  # Ограничиваем количество для экрана
-            ach_text = font_small.render(f"* {achievement['title']}", True, COLORS["text"])
-            screen.blit(ach_text, (col2_x + 20, y_offset + 40 + i * 22))
-            # Показываем статистику достижения
-            stats_text = font_xsmall.render(f"  {achievement['stats']}", True, COLORS["text_secondary"])
-            screen.blit(stats_text, (col2_x + 40, y_offset + 55 + i * 22))
+            screen.blit(title, (col1_x + 20, base_y))
+            screen.blit(stats, (col1_x + 40, base_y + LINE_TEXT))
 
-        # Совместные достижения (если есть) - ИСПРАВЛЕННАЯ ВЕРСИЯ
-        # Используем заголовки для сравнения
-        dev1_titles = [ach["title"] for ach in self.dev1.collected]
-        dev2_titles = [ach["title"] for ach in self.dev2.collected]
+        # ---------- Эльф ----------
+        screen.blit(
+            font_large.render("🧝 ELF собрал:", True, COLORS["dev2"]),
+            (col2_x, COL_TOP)
+        )
 
-        # Находим общие заголовки
-        common_titles = set(dev1_titles) & set(dev2_titles)
+        for i, ach in enumerate(self.dev2.collected[:6]):
+            base_y = COL_TOP + LINE_TITLE + i * ACH_BLOCK
 
-        if common_titles:
-            y_common = y_offset + max(len(self.dev1.collected[:6]), len(self.dev2.collected[:6])) * 22 + 80
+            title = font_small.render(f"• {ach['title']}", True, COLORS["text"])
+            stats = font_xsmall.render(ach["stats"], True, COLORS["text_secondary"])
 
-            common_title = font_large.render("Совместные достижения:", True, COLORS["primary"])
-            screen.blit(common_title, (col1_x, y_common))
+            screen.blit(title, (col2_x + 20, base_y))
+            screen.blit(stats, (col2_x + 40, base_y + LINE_TEXT))
 
-            for i, title in enumerate(list(common_titles)[:3]):
-                ach_text = font_small.render(f"• {title}", True, COLORS["text_secondary"])
-                screen.blit(ach_text, (col1_x + 20, y_common + 40 + i * 20))
+        # ---------- Совместные достижения ----------
+        dev1_titles = {a["title"] for a in self.dev1.collected}
+        dev2_titles = {a["title"] for a in self.dev2.collected}
+        common = list(dev1_titles & dev2_titles)
 
-        # Итоговая статистика
-        total_collected = len(self.dev1.collected) + len(self.dev2.collected)
-        stats_y = panel_y + panel_height - 120
+        max_rows = max(len(self.dev1.collected[:6]), len(self.dev2.collected[:6]))
+        y_common = COL_TOP + LINE_TITLE + max_rows * ACH_BLOCK + 30
+
+        if common:
+            screen.blit(
+                font_large.render("🤝 Совместные достижения:", True, COLORS["primary"]),
+                (col1_x, y_common)
+            )
+
+            for i, title in enumerate(common[:3]):
+                txt = font_small.render(f"• {title}", True, COLORS["text_secondary"])
+                screen.blit(txt, (col1_x + 20, y_common + 40 + i * 30))
+
+            y_common += 40 + len(common[:3]) * 30
+
+        # ---------- Итоговая статистика ----------
+        stats_y = y_common + 20
+        total = len(self.dev1.collected) + len(self.dev2.collected)
 
         stats = [
-            f"Всего достижений: {total_collected} из {len(achievements_data)}",
-            f"Тимлид: {len(self.dev1.collected)} достижений",
-            f"Разработчик: {len(self.dev2.collected)} достижений",
+            f"Всего достижений: {total} / {len(achievements_data)}",
+            f"SANTA: {len(self.dev1.collected)}",
+            f"ELF: {len(self.dev2.collected)}",
             f"Время игры: {self.timer // 60} сек",
-            f"Эффективность: {int((total_collected / len(achievements_data)) * 100)}%"
+            f"Эффективность: {int(total / len(achievements_data) * 100)}%"
         ]
 
         for i, stat in enumerate(stats):
-            stat_text = font_medium.render(stat, True, COLORS["text"])
-            screen.blit(stat_text, (WIDTH // 2 - stat_text.get_width() // 2, stats_y + i * 25))
+            line = font_medium.render(stat, True, COLORS["text"])
+            screen.blit(line, (WIDTH // 2 - line.get_width() // 2, stats_y + i * 28))
 
-        # Кнопка рестарта
-        restart_text = font_medium.render("Нажмите R для новой игры или ESC для выхода", True, COLORS["warning"])
-        screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, panel_y + panel_height - 30))
-
+        # ---------- Кнопка ----------
+        restart = font_medium.render(
+            "Нажмите R — новая игра | ESC — выход",
+            True, COLORS["warning"]
+        )
+        screen.blit(
+            restart,
+            (WIDTH // 2 - restart.get_width() // 2, panel_y + panel_height - 35)
+        )
     def draw(self):
         if self.state == GameState.MENU:
             self.draw_menu()
