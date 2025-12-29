@@ -16,8 +16,8 @@ emoji_surfaces = {}
 # Фоновая новогодняя музыка
 try:
     # Фоновая новогодняя музыка
-    pygame.mixer.music.load("starship.mp3")
-    pygame.mixer.music.set_volume(0.5)    # громкость 50%
+    pygame.mixer.music.load("new_year.mp3")
+    pygame.mixer.music.set_volume(0.3)    # громкость 30%
     pygame.mixer.music.play(-1)           # -1 = бесконечный повтор
     music_playing = True
 except:
@@ -97,14 +97,15 @@ COLORS = {
     "text": (255, 250, 250),  # Снежно-белый
     "text_secondary": (192, 192, 192),  # Серебристый
     "dev1": (220, 20, 60),  # Красный Санта
-    "dev2": (34, 139, 34),  # Зеленый эльф
+    "dev2": (135, 206, 235),  # Зеленый эльф
     "ui_bg": (25, 35, 50, 220),
     "obstacle": (178, 34, 34),  # Темно-красный
     "refactor": (255, 215, 0),  # Золотой
     "automation": (135, 206, 250),  # Голубой снежный
     "feature": (50, 205, 50),  # Лайм-зеленый
     "snow": (255, 255, 255),  # Белый снег
-    "star": (255, 215, 0)  # Золотая звезда
+    "star": (255, 215, 0),  # Золотая звезда,
+    "silver": (192, 192, 192),
 }
 
 
@@ -285,10 +286,15 @@ class Developer:
             pygame.draw.rect(surface, (139, 69, 19),
                              (self.x, self.y + self.height // 2, self.width, 8))
         else:  # Эльф
-            # Полоски на костюме
-            for i in range(0, self.height, 15):
-                pygame.draw.rect(surface, COLORS["warning"],
-                                 (self.x, self.y + i, self.width, 3))
+            # Белая отделка по низу
+            pygame.draw.rect(surface, COLORS["snow"],
+                             (self.x, self.y + self.height - 15, self.width, 15), 0, 5)
+            # Серебристый пояс
+            pygame.draw.rect(surface, (192, 192, 192),
+                             (self.x, self.y + self.height // 2, self.width, 5))
+            # Белая оторочка на груди
+            pygame.draw.rect(surface, COLORS["snow"],
+                             (self.x, self.y + 10, self.width, 10), 0, 5)
 
         # Голова
         head_y = self.y - 20 + bounce_offset
@@ -317,34 +323,47 @@ class Developer:
         # Новогодняя шапка
         if self.name == "Артем":  # Шапка Санты
             # Красная треугольная шапка
-            hat_offset = math.sin(pygame.time.get_ticks() * 0.005) * 3  # покачивание
+            hat_offset = math.sin(pygame.time.get_ticks() * 0.005) * 3
             hat_points = [
-                (self.x + self.width // 2 - 20, head_y - 10 + hat_offset),  # левый край
-                (self.x + self.width // 2 + 20, head_y - 10 + hat_offset),  # правый край
-                (self.x + self.width // 2, head_y - 50 + hat_offset)  # вершина
+                (self.x + self.width // 2 - 20, head_y - 10 + hat_offset),
+                (self.x + self.width // 2 + 20, head_y - 10 + hat_offset),
+                (self.x + self.width // 2, head_y - 50 + hat_offset)
             ]
             pygame.draw.polygon(surface, COLORS["primary"], hat_points)
             # Белый помпон
             pygame.draw.circle(surface, COLORS["snow"],
                                (self.x + self.width // 2, head_y - 50), 6)
-        else:  # Шапка эльфа
-            # Зеленая остроконечная шапка
+        else:  # Шапка Снегурочки
+            # Голубая шапка с белой опушкой
             hat_offset = math.sin(pygame.time.get_ticks() * 0.005) * 3
+            # Основа шапки (голубая)
             hat_points = [
-                (self.x + self.width // 2 - 18, head_y - 8 + hat_offset),  # ширина увеличена
+                (self.x + self.width // 2 - 18, head_y - 8 + hat_offset),
                 (self.x + self.width // 2 + 18, head_y - 8 + hat_offset),
-                (self.x + self.width // 2, head_y - 50 + hat_offset)  # высота увеличена
+                (self.x + self.width // 2, head_y - 50 + hat_offset)
             ]
-            pygame.draw.polygon(surface, COLORS["secondary"], hat_points)
-            # Колокольчик
-            pygame.draw.circle(surface, COLORS["warning"],
-                               (self.x + self.width // 2, head_y - 50), 4)
-            # Лицо персонажа
+            pygame.draw.polygon(surface, (135, 206, 235), hat_points)  # Голубой
 
-        if self.name == "Алина" and alina_image:  # Для эльфа используем фото Алины
+            # Белая опушка внизу шапки
+            pygame.draw.arc(surface, COLORS["snow"],
+                            (self.x + self.width // 2 - 20, head_y - 15 + hat_offset, 40, 20),
+                            0, 3.14, 3)
+
+            # Белый помпон
+            pygame.draw.circle(surface, COLORS["snow"],
+                               (self.x + self.width // 2, head_y - 50), 4)
+
+            # Серебристые снежинки на шапке
+            for i in range(3):
+                angle = i * 120  # 3 снежинки по кругу
+                snow_x = self.x + self.width // 2 + math.cos(math.radians(angle)) * 10
+                snow_y = head_y - 30 + math.sin(math.radians(angle)) * 10 + hat_offset
+                pygame.draw.circle(surface, (192, 192, 192), (int(snow_x), int(snow_y)), 2)
+
+        # Лицо персонажа
+        if self.name == "Алина" and alina_image:
             self.face(alina_image, head_y, surface)
         else:
-            # Текстовая иконка роли для Санты или если нет изображения Алины
             self.face(artem_image, head_y, surface)
 
         # Ноги (анимация бега)
@@ -352,10 +371,25 @@ class Developer:
         if self.jumping:
             leg_offset = 0
 
-        pygame.draw.rect(surface, self.color,
-                         (self.x + 5, self.y + self.height - 10, 10, 15 + leg_offset))
-        pygame.draw.rect(surface, self.color,
-                         (self.x + self.width - 15, self.y + self.height - 10, 10, 15 - leg_offset))
+        # Для снегурочки - голубые сапожки с белой опушкой
+        if self.name == "Алина":
+            # Левый сапожок
+            pygame.draw.rect(surface, (135, 206, 235),
+                             (self.x + 5, self.y + self.height - 10, 10, 15 + leg_offset))
+            pygame.draw.rect(surface, COLORS["snow"],
+                             (self.x + 5, self.y + self.height - 10, 10, 3))
+
+            # Правый сапожок
+            pygame.draw.rect(surface, (135, 206, 235),
+                             (self.x + self.width - 15, self.y + self.height - 10, 10, 15 - leg_offset))
+            pygame.draw.rect(surface, COLORS["snow"],
+                             (self.x + self.width - 15, self.y + self.height - 10, 10, 3))
+        else:
+            # Оригинальные ноги для Санты
+            pygame.draw.rect(surface, self.color,
+                             (self.x + 5, self.y + self.height - 10, 10, 15 + leg_offset))
+            pygame.draw.rect(surface, self.color,
+                             (self.x + self.width - 15, self.y + self.height - 10, 10, 15 - leg_offset))
 
         # Имя
         name_surf = font_small.render(self.name, True, COLORS["text"])
@@ -632,7 +666,7 @@ class Game:
 
         # Девелоперы в центре
         self.dev1 = Developer(center_x - 80, center_y, COLORS["dev1"], "Артем", "SANTA")
-        self.dev2 = Developer(center_x + 80, center_y, COLORS["dev2"], "Алина", "ELF")
+        self.dev2 = Developer(center_x + 80, center_y, COLORS["dev2"], "Алина", "Snow_Girl")
         self.selected_dev = self.dev1
         self.obstacles = []
         self.current_achievement = 0
@@ -1030,7 +1064,7 @@ class Game:
 
         # Описание
         description = [
-            "Санта Артем и Эльф Алина бегут к новогоднему успеху!",
+            "Дед мороз Артем и Снегурочка Алина бегут к новогоднему успеху!",
             "Перепрыгивайте препятствия (+50 очков) или касайтесь их (+150 очков).",
             "После показа достижения нажмите ENTER для продолжения."
         ]
