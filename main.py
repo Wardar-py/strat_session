@@ -17,7 +17,7 @@ emoji_surfaces = {}
 # Фоновая новогодняя музыка
 try:
     pygame.mixer.music.load("assets/new_year.ogg")
-    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.set_volume(0.2)
     pygame.mixer.music.play(-1)
     music_playing = True
 except:
@@ -38,12 +38,25 @@ except:
     background_image = None
     print("Не удалось загрузить fon.jpg")
 
-try:
-    grinch_image = pygame.image.load("assets/grinch2.png").convert_alpha()
-    grinch_image = pygame.transform.scale(grinch_image, (80, 80))
-except:
-    grinch_image = None
-    print("Не удалось загрузить grinch.png")
+enemy_images = []
+# Список имен ваших файлов (проверьте, чтобы названия в папке assets были такими же!)
+enemy_filenames = ["assets/grinch2.png", "assets/nastya.jpg", "assets/german.jpg", "assets/kolya.jpg"]
+
+
+for filename in enemy_filenames:
+    try:
+        img = pygame.image.load(filename).convert_alpha()
+        img = pygame.transform.scale(img, (80, 80))  # под размер obstacle
+        enemy_images.append(img)
+    except Exception as e:
+        print(f"Не удалось загрузить {filename}: {e}")
+
+# Если ни одна картинка не загрузилась, создаем красный квадрат, чтобы игра не вылетела
+if not enemy_images:
+    fallback = pygame.Surface((80, 80))
+    fallback.fill((255, 0, 0))
+    enemy_images.append(fallback)
+
 
 try:
     alina_image = pygame.image.load("assets/alina.png")
@@ -167,6 +180,35 @@ class Particle:
     def is_dead(self):
         return self.life <= 0
 
+class Obstacle:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.width = 80
+        self.height = 80
+
+        # 🎲 случайный персонаж
+        self.image = random.choice(enemy_images) if enemy_images else None
+
+        self.speed = 8
+
+    def update(self):
+        self.x -= self.speed
+
+    def draw(self, surface):
+        if self.image:
+            surface.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(
+                surface,
+                COLORS["obstacle"],
+                (self.x, self.y, self.width, self.height),
+                0,
+                10
+            )
+
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
 
 class Developer:
     def __init__(self, x, y, color, name, icon_text):
@@ -374,6 +416,7 @@ class AchievementObstacle:
         self.rotation = 0
         self.bounce_offset = 0
         self.bounce_speed = random.uniform(0.05, 0.1)
+        self.image = random.choice(enemy_images) if enemy_images else None
 
         self.types = {
             "team": COLORS["success"],
@@ -412,11 +455,13 @@ class AchievementObstacle:
     def draw(self, surface):
         current_y = self.y + self.bounce_offset
 
-        if grinch_image:
-            rotated_grinch = pygame.transform.rotate(grinch_image, self.rotation)
-            rotated_rect = rotated_grinch.get_rect(center=(self.x + self.width // 2,
-                                                           current_y + self.height // 2))
-            surface.blit(rotated_grinch, rotated_rect)
+        if self.image:
+            rotated_img = pygame.transform.rotate(self.image, self.rotation)
+            rotated_rect = rotated_img.get_rect(
+                center=(self.x + self.width // 2,
+                        current_y + self.height // 2)
+            )
+            surface.blit(rotated_img, rotated_rect)
         else:
             if not self.collected:
                 glow_size = 20
